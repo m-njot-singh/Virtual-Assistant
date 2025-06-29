@@ -9,7 +9,7 @@ import img9 from "../assets/Image_9.png";
 import { BiImageAdd } from "react-icons/bi";
 import { useState } from "react";
 import { useRef } from "react";
-import Card from "../Components/card";
+import Card from "../Components/Card";
 import { UserDataContext } from "../Context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
