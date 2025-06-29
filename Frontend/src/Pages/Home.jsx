@@ -19,6 +19,7 @@ function Home(){
     const [userText, setUserText] = useState("")
     const isSpeakingRef = useRef(false)
     const recognitionRef = useRef(null)
+    const isRecognizingRef = useRef(false)
     const synth = window.speechSynthesis
 
 
@@ -72,13 +73,16 @@ function Home(){
     }
 
     const startRecognization = ()=>{
-        try {
-            recognitionRef.current?.start()
-            setListening(true);
-        } catch (error) {
-            if(!error.message.includes("start")){
-                console.error("Recognition error:", error);
+        if(!isSpeakingRef.current && !isRecognizingRef.current){
+            try {
+                recognitionRef.current?.start();
+                console.log("Recognition requested to start");
                 
+            } catch (error) {
+                if(error.name !== "InvalidStateError"){
+                    console.error("start error:", error);
+                    
+                }
             }
         }
     }
@@ -88,9 +92,14 @@ function Home(){
         isSpeakingRef.current = true
 
         uttrence.onend = ()=>{
+            setAiText("")
             isSpeakingRef.current =false;
-            startRecognization()
+            setTimeout(()=>{
+                startRecognization()
+            },800)
+            
         }
+        synth.cancel()
         synth.speak(uttrence)
     }
 
@@ -101,26 +110,26 @@ function Home(){
 
         recognition.continuous = true;
         recognition.lang ='en-US'
+        recognition.interimResults = false;
 
         recognitionRef.current = recognition
 
-        const isRecognizingRef ={current : false}
+        let isMounted = true;
 
-       const safeRecognition =()=>{
-        if(!isSpeakingRef.current && !isRecognizingRef.current){
-            try {
-                recognition.start();
-                console.log("Recognition requested to start");
-                
-            } catch (error) {
-                if(error.name !== "InvalidStateError"){
-                    console.error("start error:", error);
+        const startTimeout = setTimeout(()=>{
+            if(isMounted && !isSpeakingRef.current && !isRecognizingRef.current){
+                try {
+                    recognition.start();
+                    console.log("Recognition requested to start");
                     
+                } catch (error) {
+                    if(error.name !== "InvalidStateError"){
+                        console.error(error);
+                        
+                    }
                 }
             }
-        }
-       }
-
+        },1000);
 
        recognition.onstart= ()=>{
             console.log("Recognition started");
@@ -134,9 +143,18 @@ function Home(){
             isRecognizingRef.current = false;
             setListening(false);
 
-            if(!isSpeakingRef.current ){
+            if(isMounted && !isSpeakingRef.current ){
                 setTimeout(() => {
-                    safeRecognition();
+                    if(isMounted){
+                        try {
+                            recognition.start();
+                            console.log("Recognition restarted");
+                            
+                        } catch (error) {
+                            if(error.name !== "InvalidStateError") console.error(error);
+                            
+                        }
+                    }
                 }, 1000);
             }
        }
@@ -147,9 +165,18 @@ function Home(){
             isRecognizingRef.current = false;
             setListening(false);
 
-            if(event.error !== "aborted" && !isSpeakingRef.current ){
+            if(event.error !== "aborted" && isMounted && !isSpeakingRef.current ){
                 setTimeout(() => {
-                    safeRecognition();
+                    if (isMounted) {
+                        try {
+                            recognition.start();
+                            console.log("Recognition restarted after error");
+                            
+                        } catch (error) {
+                            if(error.name !== "InvalidStateError") console.error(error);
+                            
+                        }
+                    }
                 }, 1000);
             }
        }
@@ -161,7 +188,8 @@ function Home(){
             
             try {
                  if(transcript.toLowerCase().includes(userData.assistantName.toLowerCase())){
-
+                    setAiText("")
+                    setUserText(transcript)
                     recognition.stop()
                     isRecognizingRef.current= false
                     setListening(false)
@@ -169,6 +197,8 @@ function Home(){
                     const data =await getGeminiResponse(transcript);
                     console.log("Gemini response:",data);
                     handleCommand(data)
+                    setAiText(data.response)
+                    setUserText("")
                  }
                 
                 
@@ -179,18 +209,15 @@ function Home(){
            
         }
 
-        const fallback = setInterval(() => {
-            if(!isSpeakingRef.current && !isRecognizingRef.current){
-                safeRecognition()
-            }
-        },10000);
-        safeRecognition()
+        const greeting = new SpeechSynthesisUtterance(`Hello ${userData.name}, What can I help you with?`);
+        window.speechSynthesis.speak(greeting)
 
         return ()=>{
+            isMounted = false;
+            clearTimeout(startTimeout);
             recognition.stop()
             setListening(false)
             isRecognizingRef.current = false
-            clearInterval(fallback)
         }
         
     },[])
@@ -431,9 +458,9 @@ function Home(){
                             </span>
                         </span>
                     </h2>
-                    {/* {!aiText && <img src={userImg} alt="" className="w-[200px] rounded-full bg-transparent object-cover" style={{background: "transparent"}}/>}
-                    {aiText && <img src={aiImg} alt="" className="w-[200px] rounded-full bg-transparent object-cover" style={{background: "transparent"}} />}
-                     */}
+                    <h1 className=" text-amber-50 text-wrap ">{userText?userText:aiText?aiText:null}</h1>
+
+                     
         </div>
     )
 }
