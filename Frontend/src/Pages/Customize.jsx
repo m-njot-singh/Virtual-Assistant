@@ -1,11 +1,11 @@
 import {React,useContext} from "react"
-import img1 from "../assets/image_1.png";
-import img2 from "../assets/image_2.png";
-import img3 from "../assets/image_3.png";
-import img4 from "../assets/image_4.png";
-import img6 from "../assets/image_6.png";
-import img8 from "../assets/image_8.png";
-import img9 from "../assets/image_9.png";
+import img1 from "../assets/Image_1.png";
+import img2 from "../assets/Image_2.png";
+import img3 from "../assets/Image_3.png";
+import img4 from "../assets/Image_4.png";
+import img6 from "../assets/Image_6.png";
+import img8 from "../assets/Image_8.png";
+import img9 from "../assets/Image_9.png";
 import { BiImageAdd } from "react-icons/bi";
 import { useState } from "react";
 import { useRef } from "react";
