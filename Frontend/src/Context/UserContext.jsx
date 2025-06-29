@@ -4,7 +4,7 @@ import axios from "axios"
 import { useEffect } from "react";
 export const UserDataContext= createContext()
 function UserContext({children}){
-    const serverUrl = "http://localhost:8000"
+    const serverUrl = "https://virtual-assistant-7tkp.onrender.com"
     const [userData,setUserData] = useState(null)
     const [frontendImage, setFrontendImage] = useState(null)
     const [backendImage, setBackendImage] = useState(null)
