@@ -18,7 +18,7 @@ A full-stack AI-powered virtual assistant built with the MERN stack (MongoDB, Ex
 
 ## 🚀 Demo
 
-> Coming soon! (Deploy on Vercel/Netlify for frontend, Render/Heroku for backend)
+> [Click here to view the deployed app](https://virtual-assistant-1-x743.onrender.com)
 
 ---
 
