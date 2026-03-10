@@ -73,15 +73,13 @@ function Home(){
     }
 
     const startRecognization = ()=>{
-        if(!isSpeakingRef.current && !isRecognizingRef.current){
+        if(!isSpeakingRef.current){
             try {
                 recognitionRef.current?.start();
                 console.log("Recognition requested to start");
-                
             } catch (error) {
                 if(error.name !== "InvalidStateError"){
                     console.error("start error:", error);
-                    
                 }
             }
         }
@@ -138,26 +136,17 @@ function Home(){
        }
 
 
-       recognition.onend= ()=>{
+       recognition.onend = () => {
             console.log("Recognition ended");
             isRecognizingRef.current = false;
             setListening(false);
 
-            if(isMounted && !isSpeakingRef.current ){
+            if (!isSpeakingRef.current) {
                 setTimeout(() => {
-                    if(isMounted){
-                        try {
-                            recognition.start();
-                            console.log("Recognition restarted");
-                            
-                        } catch (error) {
-                            if(error.name !== "InvalidStateError") console.error(error);
-                            
-                        }
-                    }
-                }, 1000);
+                    startRecognization();
+                }, 800);
             }
-       }
+        };
 
 
        recognition.onerror= (event)=>{
@@ -187,12 +176,11 @@ function Home(){
             console.log("Heard : "+ transcript);
             
             try {
-                 if(transcript.toLowerCase().includes(userData.assistantName.toLowerCase())){
+                 if(userData?.assistantName && 
+   transcript.toLowerCase().includes(userData.assistantName.toLowerCase())){
                     setAiText("")
                     setUserText(transcript)
                     recognition.stop()
-                    isRecognizingRef.current= false
-                    setListening(false)
 
                     const data =await getGeminiResponse(transcript);
                     console.log("Gemini response:",data);
